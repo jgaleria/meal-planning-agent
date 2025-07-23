@@ -1,6 +1,4 @@
-"""LangGraph single-node graph template.
-
-Returns a predefined response. Replace logic and configuration as needed.
+"""LangGraph meal planning agent with tool integration.
 """
 
 from __future__ import annotations
@@ -9,12 +7,15 @@ from dataclasses import dataclass
 from typing import Any, Dict, Annotated
 from typing_extensions import TypedDict
 
+from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
 
 from agent.tools import ALL_TOOLS
+from agent.prompts import MEAL_PLANNER_SYSTEM_PROMPT
 
 class Configuration(TypedDict):
     """Configurable parameters for the agent.
@@ -46,12 +47,21 @@ async def call_model(state: State, config: RunnableConfig) -> Dict[str, Any]:
     model_name = configuration.get("model_name", "gpt-3.5-turbo")
 
     llm = ChatOpenAI(model=model_name, temperature=0.7)
+    llm_with_tools = llm.bind_tools(ALL_TOOLS)
 
-    response = await llm.ainvoke(state["messages"])
+    ### Add system prompt if not there
+    messages = state["messages"]
+    has_system_prompt = any(isinstance(msg, SystemMessage) for msg in messages)
+
+    if not has_system_prompt:
+        messages= [SystemMessage(content=MEAL_PLANNER_SYSTEM_PROMPT)] + messages
+
+    response = await llm.ainvoke(messages)
 
     return {
         "messages": [response]
     }
+
 
 
 # Define the graph
