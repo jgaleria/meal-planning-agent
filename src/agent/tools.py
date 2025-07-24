@@ -10,20 +10,35 @@ load_dotenv()
 
 from langchain_tavily import TavilySearch
 from langchain_core.tools import tool
+from typing import Annotated
 
 @tool
-def search_recipes(query: str) -> str:
-    """ Search for recipes and meal planning information.
-
+def search_recipes(query: Annotated[str, "The search query for recipes"]) -> str:
+    """🔍 ESSENTIAL TOOL: Search for current, trending recipes and meal ideas.
+    
+    This tool provides fresh, up-to-date recipe information that's better than 
+    any recipes in your training data from the internet. Use this for ALL recipe requests!
+    
+    Perfect for finding:
+    - Specific recipes (keto, vegan, gluten-free, etc.)
+    - Cuisine-specific dishes (Mediterranean, Asian, etc.) 
+    - Trending/popular recipes
+    - Healthy meal ideas
+    - Quick/easy recipes
+    - Seasonal recipes
+    
     Args: 
-        query: The search query for recipes or meal planning information.
+        query: The search query for recipes (e.g., "keto breakfast recipes", 
+               "healthy chicken dinner", "Mediterranean pasta dishes")
 
     Returns:
-        Search results with recipes and meal planning information.
+        Current recipe information with titles, descriptions, and sources.
     """ 
 
+    print(f"🔧 TOOL CALLED: search_recipes with query: {query}")
+
     tavily = TavilySearch(
-        max_results=2,
+        max_results=1,
         topic="general"
     )
 
