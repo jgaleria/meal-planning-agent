@@ -19,6 +19,8 @@ from agent.prompts import MEAL_PLANNER_SYSTEM_PROMPT
 class Configuration(TypedDict):
     """Configurable parameters for the agent."""
     model_name: str
+    temperature: float
+    max_tokens: int
 
 @dataclass
 class State(TypedDict):
@@ -39,10 +41,17 @@ async def call_model(state: State, config: RunnableConfig) -> Dict[str, Any]:
     # 🔧 Get configuration
     configuration = config.get("configurable", {})
     model_name = configuration.get("model_name", "gpt-4o-mini")
+    temperature = configuration.get("temperature", 0.7)
+    max_tokens = configuration.get("max_tokens", 1000)
+
+    print(f"🔧 Using model: {model_name}")
+    print(f"🔧 Temperature: {temperature}")
+    print(f"🔧 Max tokens: {max_tokens}")
 
     llm = ChatOpenAI(
-        model="gpt-4o-mini",
-        temperature=0
+        model=model_name,
+        temperature=temperature,
+        max_tokens=max_tokens
     )
 
     llm_with_tools = llm.bind_tools(
